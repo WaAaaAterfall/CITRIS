@@ -234,7 +234,7 @@ class CITRISVAE(pl.LightningModule):
         if isinstance(self.decoder, nn.Identity):
             rec_loss = z_mean.new_zeros(imgs.shape[0], imgs.shape[1])
         else:
-            rec_loss = F.mse_loss(x_rec, labels[:,1:], reduction='none').sum(dim=[-3, -2, -1])
+            rec_loss = self._get_rec_loss(x_rec, labels[:,1:])
         # Combine to full loss
         kld_factor = self.kld_scheduler.get_factor(self.global_step)
         loss = (kld_factor * (kld_t1_all * self.hparams.beta_t1) + rec_loss.sum(dim=1)).mean()
@@ -255,6 +255,13 @@ class CITRISVAE(pl.LightningModule):
         self.log(f'{mode}_intv_classifier_z', loss_z)
 
         return loss
+
+    def _get_rec_loss(self, x_rec, x_true):
+        """ Reconstruction loss term. For images this is the summed MSE over the
+        channel/height/width axes (Gaussian likelihood with unit variance, up to a
+        constant). Subclasses for other observation types (e.g. keypoints) override
+        this to use the appropriate likelihood. Returns shape [batch_size, time_steps-1]. """
+        return F.mse_loss(x_rec, x_true, reduction='none').sum(dim=[-3, -2, -1])
 
     def triplet_prediction(self, imgs, source):
         """ Generates the triplet prediction of input image pairs and causal mask """

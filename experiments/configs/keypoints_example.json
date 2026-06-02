@@ -1,0 +1,33 @@
+{
+  "data_path": "data_generation/keypoints_synthetic.npz",
+  "norm_params": null,
+  "val_fraction": 0.2,
+  "seed": 42,
+
+  "num_latents": 8,
+  "num_causal_vars": 1,
+  "imperfect_interventions": true,
+  "use_flow_prior": true,
+  "autoregressive_prior": true,
+  "c_hid": 32,
+  "mlp_hidden": 128,
+  "mlp_num_layers": 3,
+  "act_fn": "silu",
+  "lambda_reg": 0.01,
+  "beta_t1": 1.0,
+  "beta_classifier": 2.0,
+  "kld_warmup": 1000,
+
+  "lr": 1e-3,
+  "classifier_lr": 4e-3,
+  "classifier_momentum": 0.0,
+  "classifier_gumbel_temperature": 1.0,
+  "warmup": 100,
+  "max_epochs": 200,
+  "batch_size": 256,
+  "num_workers": 4,
+  "check_val_every_n_epoch": 5,
+
+  "root_dir": "checkpoints/keypoints",
+  "logger_name": "CITRISVAE_keypoints"
+}

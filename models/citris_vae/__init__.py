@@ -1,1 +1,2 @@
 from models.citris_vae.lightning_module import CITRISVAE
+from models.citris_vae.keypoint_module import CITRISVAEKeypoints
