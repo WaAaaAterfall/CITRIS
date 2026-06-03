@@ -50,6 +50,23 @@ def _load_raw(path):
             return pickle.load(f)
 
 
+def _expand_interleaved_names(names):
+    """ Real DLC data stores ``D = 2 * len(keypoints_name)`` columns, interleaved
+    as ``[kp0_x, kp0_y, kp1_x, kp1_y, ...]`` while ``keypoints_name`` holds ONE
+    name per keypoint (see data_generation/evalute_keyoints_data.ipynb). Expand to
+    one name per column, with ``_x`` / ``_y`` suffixes, disambiguating names that
+    repeat across camera views (e.g. "nose"/"waterport" appear in both front and
+    side cameras) by an occurrence index. Keypoint ``k`` -> columns ``[2k, 2k+1]``. """
+    seen = {}
+    expanded = []
+    for base in names:
+        seen[base] = seen.get(base, 0) + 1
+        tag = base if seen[base] == 1 else f'{base}.{seen[base]}'
+        expanded.append(f'{tag}_x')
+        expanded.append(f'{tag}_y')
+    return expanded
+
+
 def validate_data(d):
     """ Assert the data dict obeys the contract. Fails loudly with the offending
     trial index. Returns the (possibly list-normalized) dict. """
@@ -60,6 +77,19 @@ def validate_data(d):
     keypoints = list(d['keypoints'])
     names = list(d['keypoints_name'])
     pert = list(d['perturbation_indicator'])
+
+    # CONFLICT WITH THE INSTRUCTION DOC (surfaced, not silently resolved):
+    # the doc assumes keypoints_name already has one entry PER COLUMN (D=76 names).
+    # The real DLC export instead provides one name PER KEYPOINT (38) with 76
+    # interleaved x/y columns. Detect this exactly (every trial has
+    # shape[1] == 2 * len(names)) and expand the names so the per-column contract
+    # and the x/y-aware evaluation both hold. Reported here, not silently ignored.
+    col_dims = {np.asarray(k).shape[1] for k in keypoints}
+    if len(col_dims) == 1 and next(iter(col_dims)) == 2 * len(names):
+        print(f'[validate_data] Detected interleaved x/y layout: '
+              f'{len(names)} keypoint names -> {2 * len(names)} columns. '
+              f'Expanding names with _x/_y suffixes (occurrence-disambiguated).')
+        names = _expand_interleaved_names(names)
 
     n_trials = len(keypoints)
     assert len(pert) == n_trials, \
