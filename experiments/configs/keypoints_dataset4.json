@@ -1,0 +1,35 @@
+{
+  "_comment": "CITRIS-VAE config for the REAL mouse-reach opto dataset (Dataset4-opto). Adjusted from keypoints_example.json for the real data's characteristics: only 79 trials / ~4833 train pairs (small), opto is well balanced (52% ON vs the synthetic set's 16%), trial lengths vary widely (19-908 frames), and there is no trial_session key so we split by whole trials. D=76 (38 DLC keypoints x [x,y], two camera views); keypoints_name is auto-expanded from 38 to 76 in validate_data. Values are percentile-normalized and shifted to ~[-0.5,0.5] (Gaussian decoder, no sigmoid, so no re-normalization needed).",
+
+  "data_path": "data_generation/dataset4_pert_samples.npz",
+  "norm_params": null,
+  "val_fraction": 0.2,
+  "seed": 42,
+
+  "num_latents": 8,
+  "num_causal_vars": 1,
+  "imperfect_interventions": true,
+  "use_flow_prior": true,
+  "autoregressive_prior": true,
+  "c_hid": 32,
+  "mlp_hidden": 128,
+  "mlp_num_layers": 3,
+  "act_fn": "silu",
+  "lambda_reg": 0.01,
+  "beta_t1": 1.0,
+  "beta_classifier": 2.0,
+  "kld_warmup": 1000,
+
+  "lr": 1e-3,
+  "classifier_lr": 4e-3,
+  "classifier_momentum": 0.0,
+  "classifier_gumbel_temperature": 1.0,
+  "warmup": 200,
+  "max_epochs": 300,
+  "batch_size": 128,
+  "num_workers": 4,
+  "check_val_every_n_epoch": 5,
+
+  "root_dir": "checkpoints/keypoints_dataset4",
+  "logger_name": "CITRISVAE_dataset4"
+}
